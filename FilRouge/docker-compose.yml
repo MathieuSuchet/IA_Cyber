@@ -1,0 +1,73 @@
+version: "3.9"
+
+networks:
+    pentest:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.30.0.0/16
+                  gateway: 172.30.0.1
+
+services:
+    # 1) Victime
+    metasploitable2:
+        image: tleemcjr/metasploitable2
+        container_name: metasploitable2
+        hostname: victim
+        networks:
+            pentest:
+                ipv4_address: 172.30.0.3
+        privileged: true
+        cap_add: [NET_ADMIN, NET_RAW]
+        tty: true
+        stdin_open: true
+        expose:
+            - "21"
+            - "22"
+            - "23"
+            - "25"
+            - "80"
+            - "111"
+            - "139"
+            - "445"
+            - "513"
+            - "514"
+            - "2121"
+            - "3306"
+            - "5432"
+        environment:
+            - RSYSLOG_REMOTE_SERVER=defender
+
+    # 2) Attaquant (Kali + Q-Learning)
+    attacker:
+        build: ./attacker
+        container_name: attacker
+        hostname: attacker
+        networks:
+            pentest:
+                ipv4_address: 172.30.0.2
+        privileged: true
+        cap_add: [NET_ADMIN, NET_RAW]
+        tty: true
+        stdin_open: true
+        ports:
+            - "2222:22"
+        volumes:
+            - ./attacker/workspace:/workspace
+            - ./attacker/logs:/var/log/attacker
+
+    # 3) Défenseur (Suricata inline + ML)
+    defender:
+        build: ./defender
+        container_name: defender
+        hostname: defender
+        networks:
+            pentest:
+                ipv4_address: 172.30.0.4
+        privileged: true
+        cap_add: [NET_ADMIN, NET_RAW]
+        ports:
+            - "2223:22"
+        volumes:
+            - ./suricata/logs:/var/log/suricata
+            - ./defender/workspace:/opt/workspace
