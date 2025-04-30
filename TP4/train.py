@@ -1,5 +1,5 @@
-from Projet.env import CyberAttackEnv
-from Projet.q_learning import QLearningAgent
+from TP4.env import CyberAttackEnv
+from TP4.q_learning import QLearningAgent
 
 env = CyberAttackEnv()
 agent = QLearningAgent((2, 2, 2), 3)  # 3 bits d’état, 3 actions

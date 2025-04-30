@@ -1,7 +1,5 @@
 .venv/
 data/
-TP2.ipynb
-main.ipynb
 agent.npy
 .idea/
 **/__pycache__
